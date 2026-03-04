@@ -1,0 +1,112 @@
+import type { Plan } from '../types/plan'
+
+export function createDefaultPlan(): Plan {
+  return {
+    id: crypto.randomUUID(),
+    name: 'My Retirement Plan',
+    timeline: {
+      currentAge: 30,
+      retirementAge: 65,
+      endAge: 90,
+    },
+    startingBalances: {
+      cash: 20000,
+      portfolio: 50000,
+      cpfOA: 30000,
+      cpfSA: 15000,
+      cpfMA: 8000,
+      mortgagePrincipal: 0,
+    },
+    inflation: { optimistic: 0.015, base: 0.025, pessimistic: 0.04 },
+    growthConfig: {
+      mode: 'direct',
+      directRate: { optimistic: 0.09, base: 0.07, pessimistic: 0.04 },
+      equityRate: { optimistic: 0.10, base: 0.08, pessimistic: 0.05 },
+      bondRate: { optimistic: 0.04, base: 0.03, pessimistic: 0.02 },
+      allocationPeriods: [
+        { id: crypto.randomUUID(), startAge: 30, equityFraction: 0.8 },
+        { id: crypto.randomUUID(), startAge: 55, equityFraction: 0.5 },
+        { id: crypto.randomUUID(), startAge: 65, equityFraction: 0.3 },
+      ],
+    },
+    withdrawalConfig: {
+      enabled: false,
+      rate: 0.04,
+      startAge: 65,
+    },
+    incomePhases: [
+      {
+        id: crypto.randomUUID(),
+        name: 'Early Career',
+        startAge: 30,
+        endAge: 40,
+        type: 'growth',
+        baseAnnualIncome: 72000,
+        growthRate: { optimistic: 0.06, base: 0.04, pessimistic: 0.02 },
+      },
+      {
+        id: crypto.randomUUID(),
+        name: 'Peak Career',
+        startAge: 40,
+        endAge: 58,
+        type: 'plateau',
+        baseAnnualIncome: 120000,
+        growthRate: { optimistic: 0.02, base: 0.01, pessimistic: 0.0 },
+      },
+      {
+        id: crypto.randomUUID(),
+        name: 'Wind-down',
+        startAge: 58,
+        endAge: 65,
+        type: 'taper',
+        baseAnnualIncome: 100000,
+        growthRate: { optimistic: -0.02, base: -0.05, pessimistic: -0.08 },
+      },
+    ],
+    expenses: [
+      {
+        id: crypto.randomUUID(),
+        name: 'Living Expenses',
+        amount: 3500,
+        frequency: 'monthly',
+        startAge: null,
+        endAge: null,
+        inflationLinked: true,
+        customEscalationRate: null,
+      },
+      {
+        id: crypto.randomUUID(),
+        name: 'Retirement Living',
+        amount: 4000,
+        frequency: 'monthly',
+        startAge: 65,
+        endAge: null,
+        inflationLinked: true,
+        customEscalationRate: null,
+      },
+    ],
+    percentageLiabilities: [],
+    mortgage: {
+      enabled: false,
+      principal: 500000,
+      annualInterestRate: 0.035,
+      tenureYears: 25,
+      startAge: 32,
+      cpfOAFraction: 0.5,
+    },
+    cpf: {
+      enabled: true,
+      interestRates: { OA: 0.025, SA: 0.04, MA: 0.04 },
+      useStatutoryRates: true,
+      customRates: {
+        employeeRate: 0.20,
+        employerRate: 0.17,
+        oaAllocation: 0.6217,
+        saAllocation: 0.1621,
+      },
+    },
+    oneTimeEvents: [],
+    recurringContributions: [],
+    annuities: [],
+  }
+}
