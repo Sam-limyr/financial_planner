@@ -4,7 +4,6 @@ export interface YearSnapshot {
   age: number
   // Income
   grossIncome: number
-  annuityIncome: number
   cpfLifeIncome: number      // CPF LIFE annual payout (0 before startAge)
   // CPF flows
   cpfEmployeeContribution: number

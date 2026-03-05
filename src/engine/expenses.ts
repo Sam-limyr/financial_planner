@@ -60,11 +60,15 @@ export function resolveRecurringContributions(
   age: number,
   plan: Plan,
   targetAccount: import('../types/plan').AccountTarget,
+  cumulativeInflation = 1.0,
 ): number {
   return plan.recurringContributions
     .filter(c => c.targetAccount === targetAccount)
     .filter(c => age >= c.startAge && age < (c.endAge ?? Infinity))
-    .reduce((sum, c) => sum + c.annualAmount, 0)
+    .reduce((sum, c) => {
+      const amount = c.inflationAdjusted ? c.annualAmount * cumulativeInflation : c.annualAmount
+      return sum + amount
+    }, 0)
 }
 
 export function resolveOneTimeEvent(

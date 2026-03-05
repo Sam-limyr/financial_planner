@@ -139,11 +139,12 @@ export interface RecurringContribution {
   name: string
   annualAmount: number    // positive = contribution, negative = withdrawal
   startAge: number
-  endAge: number | null
+  endAge: number | null   // null = runs to plan end age
   targetAccount: AccountTarget
+  inflationAdjusted?: boolean  // if true, amount grows with cumulative inflation each year
 }
 
-// ── F16: Annuities ────────────────────────────────────────────────────────────────
+// ── F16: Annuities (deprecated — migrated to RecurringContribution on load) ──────
 export interface AnnuityStream {
   id: string
   name: string
@@ -198,6 +199,6 @@ export interface Plan {
   cpf: CPFConfig
   oneTimeEvents: OneTimeEvent[]
   recurringContributions: RecurringContribution[]
-  annuities: AnnuityStream[]
+  annuities?: AnnuityStream[]    // deprecated: migrated to recurringContributions on load
   monteCarlo?: MonteCarloConfig  // optional for backward compat with saved plans
 }

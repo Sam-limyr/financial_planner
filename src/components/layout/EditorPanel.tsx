@@ -6,7 +6,6 @@ import { InvestmentsTab } from '../editor/InvestmentsTab'
 import { CPFTab } from '../editor/CPFTab'
 import { MortgageTab } from '../editor/MortgageTab'
 import { EventsTab } from '../editor/EventsTab'
-import { AnnuitiesTab } from '../editor/AnnuitiesTab'
 import { MonteCarloTab } from '../editor/MonteCarloTab'
 
 const TABS = [
@@ -17,7 +16,6 @@ const TABS = [
   { id: 'cpf',         label: 'CPF' },
   { id: 'mortgage',    label: 'Mortgage' },
   { id: 'events',      label: 'Events' },
-  { id: 'annuities',   label: 'Annuities' },
   { id: 'montecarlo',  label: 'Monte Carlo' },
 ] as const
 
@@ -54,7 +52,6 @@ export function EditorPanel() {
         {activeTab === 'cpf'         && <CPFTab />}
         {activeTab === 'mortgage'    && <MortgageTab />}
         {activeTab === 'events'      && <EventsTab />}
-        {activeTab === 'annuities'   && <AnnuitiesTab />}
         {activeTab === 'montecarlo'  && <MonteCarloTab />}
       </div>
     </div>

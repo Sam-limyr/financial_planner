@@ -4,7 +4,7 @@ import type {
   Plan, Timeline, StartingBalances, ScenarioRate, GrowthConfig,
   WithdrawalConfig, IncomePhase, ExpensePeriod, PercentageLiability,
   MortgageConfig, CPFConfig, OneTimeEvent, RecurringContribution,
-  AnnuityStream, AllocationPeriod, MonteCarloConfig,
+  AllocationPeriod, MonteCarloConfig,
 } from '../types/plan'
 import type { SimulationResult, MonteCarloResult } from '../types/simulation'
 import { runAllScenarios } from '../engine/simulate'
@@ -118,11 +118,6 @@ interface PlanStore {
   updateRecurringContribution: (id: string, c: Partial<RecurringContribution>) => void
   removeRecurringContribution: (id: string) => void
 
-  // Annuities
-  addAnnuity: (a: AnnuityStream) => void
-  updateAnnuity: (id: string, a: Partial<AnnuityStream>) => void
-  removeAnnuity: (id: string) => void
-
   // Allocation periods
   addAllocationPeriod: (p: AllocationPeriod) => void
   updateAllocationPeriod: (id: string, p: Partial<AllocationPeriod>) => void
@@ -139,13 +134,35 @@ function withResult(plan: Plan): { plan: Plan; result: SimulationResult } {
   return { plan, result: runAllScenarios(plan) }
 }
 
-// Merge any saved plan with current defaults to fill in new optional fields
+// Merge any saved plan with current defaults to fill in new optional fields.
+// Also migrates deprecated annuities → recurringContributions.
 function migratePlan(saved: Plan): Plan {
   const defaults = createDefaultPlan()
-  return {
+  const plan: Plan = {
     ...saved,
     monteCarlo: { ...defaults.monteCarlo!, ...(saved.monteCarlo ?? {}) },
   }
+
+  // Migrate old annuities (deprecated field) to recurringContributions
+  const oldAnnuities = (saved as any).annuities ?? []
+  if (oldAnnuities.length > 0) {
+    const converted: RecurringContribution[] = oldAnnuities.map((a: any) => ({
+      id: a.id,
+      name: a.name,
+      annualAmount: a.annualAmount,
+      startAge: a.startAge,
+      endAge: a.durationYears === 'lifetime' ? null : a.startAge + a.durationYears,
+      targetAccount: 'portfolio' as const,
+      inflationAdjusted: a.inflationAdjusted ?? false,
+    }))
+    const existingIds = new Set(plan.recurringContributions.map(c => c.id))
+    plan.recurringContributions = [
+      ...plan.recurringContributions,
+      ...converted.filter(c => !existingIds.has(c.id)),
+    ]
+  }
+
+  return plan
 }
 
 const initialPlan = migratePlan(loadFromStorage() ?? createDefaultPlan())
@@ -251,13 +268,6 @@ export const usePlanStore = create<PlanStore>()(
       recurringContributions: s.plan.recurringContributions.map(x => x.id === id ? { ...x, ...c } : x),
     })),
     removeRecurringContribution: (id) => set(s => withResult({ ...s.plan, recurringContributions: s.plan.recurringContributions.filter(x => x.id !== id) })),
-
-    addAnnuity: (a) => set(s => withResult({ ...s.plan, annuities: [...s.plan.annuities, a] })),
-    updateAnnuity: (id, a) => set(s => withResult({
-      ...s.plan,
-      annuities: s.plan.annuities.map(x => x.id === id ? { ...x, ...a } : x),
-    })),
-    removeAnnuity: (id) => set(s => withResult({ ...s.plan, annuities: s.plan.annuities.filter(x => x.id !== id) })),
 
     addAllocationPeriod: (p) => set(s => withResult({
       ...s.plan,

@@ -112,7 +112,7 @@ export function ResultsTable({ scenario }: Props) {
                       <td colSpan={COLUMNS.length + 1} className="px-3 py-2">
                         <div className="grid grid-cols-3 gap-x-6 gap-y-1 text-[10px] text-slate-400">
                           <span>Gross income: <span className="text-slate-200">{fmt(snap.grossIncome)}</span></span>
-                          <span>Annuity income: <span className="text-slate-200">{fmt(snap.annuityIncome)}</span></span>
+                          <span>CPF LIFE income: <span className="text-slate-200">{fmt(snap.cpfLifeIncome)}</span></span>
                           <span>Income tax: <span className="text-red-300">{fmt(snap.incomeTax)}</span></span>
                           <span>CPF employee: <span className="text-slate-200">{fmt(snap.cpfEmployeeContribution)}</span></span>
                           <span>CPF employer: <span className="text-slate-200">{fmt(snap.cpfEmployerContribution)}</span></span>

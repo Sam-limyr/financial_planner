@@ -2,7 +2,7 @@ import type { Plan, Scenario } from '../types/plan'
 import type { YearSnapshot, ScenarioResult, SimulationResult } from '../types/simulation'
 import { computeCPFFlow } from './cpf'
 import { resolveGrowthRate } from './growth'
-import { resolveIncome, resolveAnnuityIncome } from './income'
+import { resolveIncome } from './income'
 import {
   resolveAllExpenses,
   resolvePercentageLiabilitiesOnIncome,
@@ -39,7 +39,6 @@ function simulate(plan: Plan, scenario: Scenario, growthFn?: (age: number) => nu
   for (let age = timeline.currentAge; age <= timeline.endAge; age++) {
     // ── 1. INCOME ──────────────────────────────────────────────────────────
     const grossIncome = resolveIncome(age, plan.incomePhases, scenario)
-    const annuityIncome = resolveAnnuityIncome(age, plan.annuities, cumulativeInflation)
 
     // ── 1b. CPF LIFE ───────────────────────────────────────────────────────
     const cpfLifeConfig = cpf.cpfLife
@@ -91,17 +90,16 @@ function simulate(plan: Plan, scenario: Scenario, growthFn?: (age: number) => nu
     state.cpfSA += cpfSAEvents
 
     // ── 7. RECURRING CONTRIBUTIONS ─────────────────────────────────────────
-    const portfolioContrib = resolveRecurringContributions(age, plan, 'portfolio')
-      + resolveRecurringContributions(age, plan, 'cash')
-    const cpfOAContrib = resolveRecurringContributions(age, plan, 'cpfOA')
-    const cpfSAContrib = resolveRecurringContributions(age, plan, 'cpfSA')
+    const portfolioContrib = resolveRecurringContributions(age, plan, 'portfolio', cumulativeInflation)
+      + resolveRecurringContributions(age, plan, 'cash', cumulativeInflation)
+    const cpfOAContrib = resolveRecurringContributions(age, plan, 'cpfOA', cumulativeInflation)
+    const cpfSAContrib = resolveRecurringContributions(age, plan, 'cpfSA', cumulativeInflation)
     state.cpfOA += cpfOAContrib
     state.cpfSA += cpfSAContrib
 
     // ── 8. NET CASH FLOW ───────────────────────────────────────────────────
     const netCashFlow =
       takeHome
-      + annuityIncome
       + cpfLifeIncome
       - incomeTax
       - fixedExpenses
@@ -150,7 +148,6 @@ function simulate(plan: Plan, scenario: Scenario, growthFn?: (age: number) => nu
     snapshots.push({
       age,
       grossIncome,
-      annuityIncome,
       cpfLifeIncome,
       cpfEmployeeContribution: cpfFlow.employeeContribution,
       cpfEmployerContribution: cpfFlow.employerContribution,

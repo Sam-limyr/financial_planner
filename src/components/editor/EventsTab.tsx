@@ -5,6 +5,7 @@ import { ItemList } from '../ui/ItemList'
 import { NumberInput } from '../ui/NumberInput'
 import { CurrencyInput } from '../ui/CurrencyInput'
 import { Select } from '../ui/Select'
+import { Toggle } from '../ui/Toggle'
 import type { OneTimeEvent, RecurringContribution, AccountTarget } from '../../types/plan'
 
 const ACCOUNT_OPTIONS: { value: AccountTarget; label: string }[] = [
@@ -115,6 +116,12 @@ function ContribForm({ contrib, onUpdate }: { contrib: RecurringContribution; on
             className="flex-1 bg-transparent text-white text-sm py-1.5 pr-2 outline-none" />
         </div>
       </div>
+      <Toggle
+        label="Inflation-adjusted"
+        checked={contrib.inflationAdjusted ?? false}
+        onChange={v => onUpdate({ inflationAdjusted: v })}
+        hint="Amount grows with cumulative inflation each year."
+      />
     </div>
   )
 }
@@ -160,7 +167,7 @@ export function EventsTab() {
   const contribItems = [...plan.recurringContributions].sort((a, b) => a.startAge - b.startAge).map(c => ({
     id: c.id,
     label: c.name,
-    sublabel: `$${Math.abs(c.annualAmount).toLocaleString()}/yr · Age ${c.startAge}–${c.endAge ?? '∞'} → ${c.targetAccount}`,
+    sublabel: `$${Math.abs(c.annualAmount).toLocaleString()}/yr · Age ${c.startAge}–${c.endAge ?? '∞'} → ${c.targetAccount}${c.inflationAdjusted ? ' · inflation-adj.' : ''}`,
     badge: c.annualAmount >= 0 ? 'Contribution' : 'Withdrawal',
     badgeColor: c.annualAmount >= 0 ? 'bg-emerald-900/50 text-emerald-300' : 'bg-red-900/50 text-red-300',
   }))

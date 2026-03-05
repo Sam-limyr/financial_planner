@@ -121,7 +121,6 @@ export function createDefaultPlan(): Plan {
     },
     oneTimeEvents: [],
     recurringContributions: [],
-    annuities: [],
     monteCarlo: {
       enabled: false,
       iterations: 1000,
