@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SummaryCards } from '../results/SummaryCards'
 import { TrajectoryChart } from '../results/TrajectoryChart'
+import { MonteCarloChart } from '../results/MonteCarloChart'
 import { ResultsTable } from '../results/ResultsTable'
 import type { Scenario } from '../../types/plan'
 
@@ -12,6 +13,7 @@ export function ResultsPanel() {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <SummaryCards />
         <TrajectoryChart />
+        <MonteCarloChart />
         <div>
           <div className="flex items-center gap-1 mb-2">
             {(['optimistic', 'base', 'pessimistic'] as Scenario[]).map(s => (

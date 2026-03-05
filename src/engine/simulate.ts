@@ -20,7 +20,7 @@ interface SimState {
   cpfIA: number
 }
 
-function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
+function simulate(plan: Plan, scenario: Scenario, growthFn?: (age: number) => number): ScenarioResult {
   const { timeline, startingBalances, inflation, cpf } = plan
   const mortgageTable = buildAmortizationTable(plan.mortgage)
 
@@ -112,7 +112,7 @@ function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
     state.portfolio += netCashFlow
 
     // ── 9. PORTFOLIO GROWTH ────────────────────────────────────────────────
-    const growthRate = resolveGrowthRate(age, plan.growthConfig, scenario)
+    const growthRate = growthFn ? growthFn(age) : resolveGrowthRate(age, plan.growthConfig, scenario)
     const portfolioFees = resolvePercentageLiabilitiesOnPortfolio(age, state.portfolio, plan)
     state.portfolio = (state.portfolio - portfolioFees) * (1 + growthRate)
 
@@ -187,6 +187,19 @@ function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
   const peakNetWorth = Math.max(...snapshots.map(s => s.netWorth))
 
   return { scenario, snapshots, retirementBalance, depletionAge, finalNetWorth, peakNetWorth }
+}
+
+// Lean export for Monte Carlo: runs base scenario with a custom growth function,
+// returning only the minimal data needed for percentile computation.
+export function simulateForMC(
+  plan: Plan,
+  growthFn: (age: number) => number,
+): Array<{ age: number; netWorth: number; portfolio: number }> {
+  return simulate(plan, 'base', growthFn).snapshots.map(s => ({
+    age: s.age,
+    netWorth: s.netWorth,
+    portfolio: s.portfolio,
+  }))
 }
 
 export function runAllScenarios(plan: Plan): SimulationResult {

@@ -4,10 +4,11 @@ import type {
   Plan, Timeline, StartingBalances, ScenarioRate, GrowthConfig,
   WithdrawalConfig, IncomePhase, ExpensePeriod, PercentageLiability,
   MortgageConfig, CPFConfig, OneTimeEvent, RecurringContribution,
-  AnnuityStream, AllocationPeriod,
+  AnnuityStream, AllocationPeriod, MonteCarloConfig,
 } from '../types/plan'
-import type { SimulationResult } from '../types/simulation'
+import type { SimulationResult, MonteCarloResult } from '../types/simulation'
 import { runAllScenarios } from '../engine/simulate'
+import { runMonteCarlo } from '../engine/monteCarlo'
 import { createDefaultPlan } from './defaultPlan'
 
 const STORAGE_KEY = 'retire-if-fire-plan'
@@ -64,6 +65,11 @@ function saveSavesToStorage(profiles: SavedProfile[]) {
 interface PlanStore {
   plan: Plan
   result: SimulationResult
+
+  // ── Monte Carlo ───────────────────────────────────────────────────────────
+  monteCarloResult: MonteCarloResult | null
+  updateMonteCarlo: (m: Partial<MonteCarloConfig>) => void
+  triggerMonteCarlo: () => void
 
   // ── Save/Load profiles ────────────────────────────────────────────────────
   savedProfiles: SavedProfile[]
@@ -133,14 +139,39 @@ function withResult(plan: Plan): { plan: Plan; result: SimulationResult } {
   return { plan, result: runAllScenarios(plan) }
 }
 
-const initialPlan = loadFromStorage() ?? createDefaultPlan()
+// Merge any saved plan with current defaults to fill in new optional fields
+function migratePlan(saved: Plan): Plan {
+  const defaults = createDefaultPlan()
+  return {
+    ...saved,
+    monteCarlo: { ...defaults.monteCarlo!, ...(saved.monteCarlo ?? {}) },
+  }
+}
+
+const initialPlan = migratePlan(loadFromStorage() ?? createDefaultPlan())
 
 export const usePlanStore = create<PlanStore>()(
   subscribeWithSelector((set, get) => ({
     plan: initialPlan,
     result: runAllScenarios(initialPlan),
+    monteCarloResult: null,
     savedProfiles: loadSavesFromStorage(),
     lastSavedSnapshot: JSON.stringify(initialPlan),
+
+    // ── Monte Carlo ─────────────────────────────────────────────────────────
+
+    updateMonteCarlo: (m) => set(s => ({
+      ...withResult({
+        ...s.plan,
+        monteCarlo: { ...(s.plan.monteCarlo ?? createDefaultPlan().monteCarlo!), ...m },
+      }),
+      monteCarloResult: null,  // invalidate stale result when config changes
+    })),
+
+    triggerMonteCarlo: () => {
+      const mcResult = runMonteCarlo(get().plan)
+      set({ monteCarloResult: mcResult })
+    },
 
     // ── Save/Load profiles ──────────────────────────────────────────────────
 
@@ -163,7 +194,8 @@ export const usePlanStore = create<PlanStore>()(
     },
 
     loadProfile: (plan) => {
-      set({ ...withResult(plan), lastSavedSnapshot: JSON.stringify(plan) })
+      const migrated = migratePlan(plan)
+      set({ ...withResult(migrated), lastSavedSnapshot: JSON.stringify(migrated), monteCarloResult: null })
     },
 
     deleteProfile: (id) => {
@@ -266,7 +298,8 @@ export const usePlanStore = create<PlanStore>()(
       try {
         const parsed = JSON.parse(json) as Plan
         if (!parsed.timeline || !parsed.startingBalances) throw new Error('Invalid plan')
-        set({ ...withResult(parsed), lastSavedSnapshot: JSON.stringify(parsed) })
+        const migrated = migratePlan(parsed)
+        set({ ...withResult(migrated), lastSavedSnapshot: JSON.stringify(migrated), monteCarloResult: null })
       } catch {
         alert('Failed to import plan — invalid file format.')
       }

@@ -7,6 +7,7 @@ import { CPFTab } from '../editor/CPFTab'
 import { MortgageTab } from '../editor/MortgageTab'
 import { EventsTab } from '../editor/EventsTab'
 import { AnnuitiesTab } from '../editor/AnnuitiesTab'
+import { MonteCarloTab } from '../editor/MonteCarloTab'
 
 const TABS = [
   { id: 'setup',       label: 'Setup' },
@@ -17,6 +18,7 @@ const TABS = [
   { id: 'mortgage',    label: 'Mortgage' },
   { id: 'events',      label: 'Events' },
   { id: 'annuities',   label: 'Annuities' },
+  { id: 'montecarlo',  label: 'Monte Carlo' },
 ] as const
 
 type TabId = typeof TABS[number]['id']
@@ -53,6 +55,7 @@ export function EditorPanel() {
         {activeTab === 'mortgage'    && <MortgageTab />}
         {activeTab === 'events'      && <EventsTab />}
         {activeTab === 'annuities'   && <AnnuitiesTab />}
+        {activeTab === 'montecarlo'  && <MonteCarloTab />}
       </div>
     </div>
   )

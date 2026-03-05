@@ -172,6 +172,15 @@ export interface WithdrawalConfig {
   startAge: number  // usually = retirementAge
 }
 
+// ── Monte Carlo ────────────────────────────────────────────────────────────────────
+export interface MonteCarloConfig {
+  enabled: boolean
+  iterations: number          // number of simulation runs, e.g. 1000
+  annualReturnMean: number    // nominal mean annual portfolio return, e.g. 0.07
+  annualReturnStdDev: number  // annual standard deviation, e.g. 0.15
+  percentiles: number[]       // sorted ascending, e.g. [5, 25, 50, 75, 95]
+}
+
 // ── Root Plan ─────────────────────────────────────────────────────────────────────
 export interface Plan {
   id: string
@@ -189,4 +198,5 @@ export interface Plan {
   oneTimeEvents: OneTimeEvent[]
   recurringContributions: RecurringContribution[]
   annuities: AnnuityStream[]
+  monteCarlo?: MonteCarloConfig  // optional for backward compat with saved plans
 }

@@ -122,5 +122,12 @@ export function createDefaultPlan(): Plan {
     oneTimeEvents: [],
     recurringContributions: [],
     annuities: [],
+    monteCarlo: {
+      enabled: false,
+      iterations: 1000,
+      annualReturnMean: 0.07,
+      annualReturnStdDev: 0.15,
+      percentiles: [5, 25, 50, 75, 95],
+    },
   }
 }

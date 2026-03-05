@@ -48,3 +48,16 @@ export interface SimulationResult {
   base: ScenarioResult
   pessimistic: ScenarioResult
 }
+
+// ── Monte Carlo ────────────────────────────────────────────────────────────────────
+export interface MonteCarloYear {
+  age: number
+  // Record<percentile, netWorth value>, e.g. { 5: 120000, 50: 480000, 95: 1200000 }
+  percentileValues: Record<number, number>
+}
+
+export interface MonteCarloResult {
+  years: MonteCarloYear[]
+  percentiles: number[]    // the percentile lines that were computed
+  successRate: number      // fraction of iterations where netWorth never went negative
+}
