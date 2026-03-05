@@ -128,6 +128,7 @@ export function createDefaultPlan(): Plan {
       annualReturnMean: 0.07,
       annualReturnStdDev: 0.15,
       percentiles: [5, 25, 50, 75, 95],
+      zeroOutFailures: true,
     },
   }
 }

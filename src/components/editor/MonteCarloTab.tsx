@@ -102,6 +102,17 @@ export function MonteCarloTab() {
                 />
               </div>
 
+              {/* ── Failure mode ───────────────────────────────────────── */}
+              <div className="space-y-2 pt-1 border-t border-slate-700">
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Failure Mode</p>
+                <Toggle
+                  label="Zero out failures"
+                  checked={mc.zeroOutFailures ?? true}
+                  onChange={v => updateMonteCarlo({ zeroOutFailures: v })}
+                  hint="When enabled, any run that hits $0 is permanently stuck at $0 and cannot recover. Reflects realistic ruin. Enabled by default."
+                />
+              </div>
+
               {/* ── Percentile lines ───────────────────────────────────── */}
               <div className="space-y-1.5 pt-1 border-t border-slate-700">
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Percentile Lines</p>

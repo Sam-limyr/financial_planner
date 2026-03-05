@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ResponsiveContainer,
@@ -72,11 +73,13 @@ function SuccessRateBadge({ rate }: { rate: number }) {
   )
 }
 
-export function MonteCarloChart() {
+function ChartContent({ chartHeight, onExpand, onCollapse }: {
+  chartHeight: number
+  onExpand?: () => void
+  onCollapse?: () => void
+}) {
   const { plan, monteCarloResult, triggerMonteCarlo } = usePlanStore()
   const mc = plan.monteCarlo ?? DEFAULT_MC
-
-  if (!mc.enabled) return null
 
   const data = monteCarloResult?.years.map(year => ({
     age: year.age,
@@ -86,9 +89,9 @@ export function MonteCarloChart() {
   })) ?? []
 
   return (
-    <div className="bg-slate-800 rounded-lg p-4">
-      <div className="flex items-start justify-between mb-3 gap-3">
-        <div>
+    <>
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <div className="flex-1 min-w-0">
           <h2 className="text-sm font-semibold text-slate-200">Monte Carlo</h2>
           {monteCarloResult ? (
             <p className="text-xs text-slate-400 mt-0.5">
@@ -103,16 +106,42 @@ export function MonteCarloChart() {
             </p>
           )}
         </div>
-        <button
-          onClick={triggerMonteCarlo}
-          className="text-xs px-3 py-1.5 rounded bg-fire-600 text-white hover:bg-fire-500 transition-colors font-medium shrink-0"
-        >
-          {monteCarloResult ? 'Re-run' : 'Run Simulation'}
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={triggerMonteCarlo}
+            className="text-xs px-3 py-1.5 rounded bg-fire-600 text-white hover:bg-fire-500 transition-colors font-medium"
+          >
+            {monteCarloResult ? 'Re-run' : 'Run Simulation'}
+          </button>
+          {onExpand && (
+            <button
+              onClick={onExpand}
+              title="Expand to fullscreen"
+              className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+                <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+              </svg>
+            </button>
+          )}
+          {onCollapse && (
+            <button
+              onClick={onCollapse}
+              title="Exit fullscreen"
+              className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
+                <path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {!monteCarloResult ? (
-        <div className="h-[300px] flex flex-col items-center justify-center gap-2 text-slate-500">
+        <div style={{ height: chartHeight }} className="flex flex-col items-center justify-center gap-2 text-slate-500">
           <p className="text-sm">No simulation data yet.</p>
           <p className="text-xs">
             Click <span className="text-white">Run Simulation</span> to generate {mc.iterations.toLocaleString()} iterations.
@@ -120,7 +149,7 @@ export function MonteCarloChart() {
         </div>
       ) : (
         <>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
             <LineChart data={data} margin={{ top: 5, right: 5, left: 10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis
@@ -180,6 +209,33 @@ export function MonteCarloChart() {
           </p>
         </>
       )}
-    </div>
+    </>
+  )
+}
+
+export function MonteCarloChart() {
+  const { plan } = usePlanStore()
+  const mc = plan.monteCarlo ?? DEFAULT_MC
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  if (!mc.enabled) return null
+
+  return (
+    <>
+      <div className="bg-slate-800 rounded-lg p-4">
+        <ChartContent chartHeight={300} onExpand={() => setIsFullscreen(true)} />
+      </div>
+
+      {isFullscreen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6"
+          onClick={e => { if (e.target === e.currentTarget) setIsFullscreen(false) }}
+        >
+          <div className="bg-slate-800 rounded-xl p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+            <ChartContent chartHeight={520} onCollapse={() => setIsFullscreen(false)} />
+          </div>
+        </div>
+      )}
+    </>
   )
 }

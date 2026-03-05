@@ -9,6 +9,35 @@ import { Toggle } from '../ui/Toggle'
 import type { ExpensePeriod, ExpenseFrequency, PercentageLiability, LiabilityBase } from '../../types/plan'
 
 function ExpenseForm({ expense, onUpdate }: { expense: ExpensePeriod; onUpdate: (e: Partial<ExpensePeriod>) => void }) {
+  const [startAgeStr, setStartAgeStr] = useState(expense.startAge != null ? String(expense.startAge) : '')
+  const [endAgeStr, setEndAgeStr] = useState(expense.endAge != null ? String(expense.endAge) : '')
+  const [escalStr, setEscalStr] = useState(
+    expense.customEscalationRate !== null ? String(+(expense.customEscalationRate * 100).toFixed(4)) : ''
+  )
+
+  const handleNullableAge = (
+    str: string,
+    setStr: (s: string) => void,
+    field: 'startAge' | 'endAge',
+  ) => ({
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      const s = e.target.value
+      setStr(s)
+      if (s === '') onUpdate({ [field]: null })
+      else { const p = parseFloat(s); if (!isNaN(p)) onUpdate({ [field]: p }) }
+    },
+    onBlur: () => {
+      if (str === '') { onUpdate({ [field]: null }); return }
+      const p = parseFloat(str)
+      const norm = isNaN(p) ? null : p
+      onUpdate({ [field]: norm })
+      setStr(norm != null ? String(norm) : '')
+    },
+  })
+
+  const startAgeHandlers = handleNullableAge(startAgeStr, setStartAgeStr, 'startAge')
+  const endAgeHandlers = handleNullableAge(endAgeStr, setEndAgeStr, 'endAge')
+
   return (
     <div className="space-y-2">
       <div className="flex flex-col gap-1">
@@ -29,20 +58,24 @@ function ExpenseForm({ expense, onUpdate }: { expense: ExpensePeriod; onUpdate: 
         <div className="flex flex-col gap-1">
           <label className="text-xs text-slate-400">Start Age (blank = always)</label>
           <input
-            type="number"
-            value={expense.startAge ?? ''}
+            type="text"
+            inputMode="numeric"
+            value={startAgeStr}
             placeholder="Always"
-            onChange={e => onUpdate({ startAge: e.target.value === '' ? null : Number(e.target.value) })}
+            onChange={startAgeHandlers.onChange}
+            onBlur={startAgeHandlers.onBlur}
             className="bg-slate-700 border border-slate-600 rounded text-white text-sm py-1.5 px-2 outline-none focus:border-fire-500"
           />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-slate-400">End Age (blank = always)</label>
           <input
-            type="number"
-            value={expense.endAge ?? ''}
+            type="text"
+            inputMode="numeric"
+            value={endAgeStr}
             placeholder="Always"
-            onChange={e => onUpdate({ endAge: e.target.value === '' ? null : Number(e.target.value) })}
+            onChange={endAgeHandlers.onChange}
+            onBlur={endAgeHandlers.onBlur}
             className="bg-slate-700 border border-slate-600 rounded text-white text-sm py-1.5 px-2 outline-none focus:border-fire-500"
           />
         </div>
@@ -51,11 +84,23 @@ function ExpenseForm({ expense, onUpdate }: { expense: ExpensePeriod; onUpdate: 
       <div className="flex flex-col gap-1">
         <label className="text-xs text-slate-400">Custom escalation rate % (overrides inflation if set)</label>
         <input
-          type="number"
-          value={expense.customEscalationRate !== null ? expense.customEscalationRate * 100 : ''}
+          type="text"
+          inputMode="decimal"
+          value={escalStr}
           placeholder="Use general inflation"
-          step={0.1}
-          onChange={e => onUpdate({ customEscalationRate: e.target.value === '' ? null : Number(e.target.value) / 100 })}
+          onChange={e => {
+            const s = e.target.value
+            setEscalStr(s)
+            if (s === '') onUpdate({ customEscalationRate: null })
+            else { const p = parseFloat(s); if (!isNaN(p)) onUpdate({ customEscalationRate: p / 100 }) }
+          }}
+          onBlur={() => {
+            if (escalStr === '') { onUpdate({ customEscalationRate: null }); return }
+            const p = parseFloat(escalStr)
+            const norm = isNaN(p) ? null : p
+            onUpdate({ customEscalationRate: norm !== null ? norm / 100 : null })
+            setEscalStr(norm != null ? String(norm) : '')
+          }}
           className="bg-slate-700 border border-slate-600 rounded text-white text-sm py-1.5 px-2 outline-none focus:border-fire-500"
         />
       </div>
@@ -64,6 +109,32 @@ function ExpenseForm({ expense, onUpdate }: { expense: ExpensePeriod; onUpdate: 
 }
 
 function LiabilityForm({ liability, onUpdate }: { liability: PercentageLiability; onUpdate: (l: Partial<PercentageLiability>) => void }) {
+  const [startAgeStr, setStartAgeStr] = useState(liability.startAge != null ? String(liability.startAge) : '')
+  const [endAgeStr, setEndAgeStr] = useState(liability.endAge != null ? String(liability.endAge) : '')
+
+  const makeHandler = (
+    str: string,
+    setStr: (s: string) => void,
+    field: 'startAge' | 'endAge',
+  ) => ({
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      const s = e.target.value
+      setStr(s)
+      if (s === '') onUpdate({ [field]: null })
+      else { const p = parseFloat(s); if (!isNaN(p)) onUpdate({ [field]: p }) }
+    },
+    onBlur: () => {
+      if (str === '') { onUpdate({ [field]: null }); return }
+      const p = parseFloat(str)
+      const norm = isNaN(p) ? null : p
+      onUpdate({ [field]: norm })
+      setStr(norm != null ? String(norm) : '')
+    },
+  })
+
+  const startHandlers = makeHandler(startAgeStr, setStartAgeStr, 'startAge')
+  const endHandlers = makeHandler(endAgeStr, setEndAgeStr, 'endAge')
+
   return (
     <div className="space-y-2">
       <div className="flex flex-col gap-1">
@@ -84,14 +155,24 @@ function LiabilityForm({ liability, onUpdate }: { liability: PercentageLiability
       <div className="grid grid-cols-2 gap-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-slate-400">Start Age (blank = always)</label>
-          <input type="number" value={liability.startAge ?? ''} placeholder="Always"
-            onChange={e => onUpdate({ startAge: e.target.value === '' ? null : Number(e.target.value) })}
+          <input
+            type="text"
+            inputMode="numeric"
+            value={startAgeStr}
+            placeholder="Always"
+            onChange={startHandlers.onChange}
+            onBlur={startHandlers.onBlur}
             className="bg-slate-700 border border-slate-600 rounded text-white text-sm py-1.5 px-2 outline-none focus:border-fire-500" />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-slate-400">End Age (blank = always)</label>
-          <input type="number" value={liability.endAge ?? ''} placeholder="Always"
-            onChange={e => onUpdate({ endAge: e.target.value === '' ? null : Number(e.target.value) })}
+          <input
+            type="text"
+            inputMode="numeric"
+            value={endAgeStr}
+            placeholder="Always"
+            onChange={endHandlers.onChange}
+            onBlur={endHandlers.onBlur}
             className="bg-slate-700 border border-slate-600 rounded text-white text-sm py-1.5 px-2 outline-none focus:border-fire-500" />
         </div>
       </div>

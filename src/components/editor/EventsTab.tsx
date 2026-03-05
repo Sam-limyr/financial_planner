@@ -15,6 +15,8 @@ const ACCOUNT_OPTIONS: { value: AccountTarget; label: string }[] = [
 ]
 
 function EventForm({ event, onUpdate }: { event: OneTimeEvent; onUpdate: (e: Partial<OneTimeEvent>) => void }) {
+  const [amountStr, setAmountStr] = useState(String(event.amount))
+
   return (
     <div className="space-y-2">
       <div className="flex flex-col gap-1">
@@ -30,8 +32,22 @@ function EventForm({ event, onUpdate }: { event: OneTimeEvent; onUpdate: (e: Par
         <label className="text-xs text-slate-400">Amount (negative = outflow)</label>
         <div className="flex items-center bg-slate-700 rounded border border-slate-600 focus-within:border-fire-500">
           <span className="px-2 text-slate-400 text-sm">$</span>
-          <input type="number" value={event.amount}
-            onChange={e => onUpdate({ amount: Number(e.target.value) })}
+          <input
+            type="text"
+            inputMode="decimal"
+            value={amountStr}
+            onChange={e => {
+              const str = e.target.value
+              setAmountStr(str)
+              const parsed = parseFloat(str)
+              if (!isNaN(parsed)) onUpdate({ amount: parsed })
+            }}
+            onBlur={() => {
+              const parsed = parseFloat(amountStr)
+              const norm = isNaN(parsed) ? 0 : parsed
+              onUpdate({ amount: norm })
+              setAmountStr(String(norm))
+            }}
             className="flex-1 bg-transparent text-white text-sm py-1.5 pr-2 outline-none" />
         </div>
       </div>
@@ -40,6 +56,9 @@ function EventForm({ event, onUpdate }: { event: OneTimeEvent; onUpdate: (e: Par
 }
 
 function ContribForm({ contrib, onUpdate }: { contrib: RecurringContribution; onUpdate: (c: Partial<RecurringContribution>) => void }) {
+  const [amountStr, setAmountStr] = useState(String(contrib.annualAmount))
+  const [endAgeStr, setEndAgeStr] = useState(contrib.endAge != null ? String(contrib.endAge) : '')
+
   return (
     <div className="space-y-2">
       <div className="flex flex-col gap-1">
@@ -51,8 +70,24 @@ function ContribForm({ contrib, onUpdate }: { contrib: RecurringContribution; on
         <NumberInput label="Start Age" value={contrib.startAge} onChange={v => onUpdate({ startAge: v })} min={0} />
         <div className="flex flex-col gap-1">
           <label className="text-xs text-slate-400">End Age (blank = forever)</label>
-          <input type="number" value={contrib.endAge ?? ''} placeholder="Forever"
-            onChange={e => onUpdate({ endAge: e.target.value === '' ? null : Number(e.target.value) })}
+          <input
+            type="text"
+            inputMode="numeric"
+            value={endAgeStr}
+            placeholder="Forever"
+            onChange={e => {
+              const str = e.target.value
+              setEndAgeStr(str)
+              if (str === '') onUpdate({ endAge: null })
+              else { const p = parseFloat(str); if (!isNaN(p)) onUpdate({ endAge: p }) }
+            }}
+            onBlur={() => {
+              if (endAgeStr === '') { onUpdate({ endAge: null }); return }
+              const p = parseFloat(endAgeStr)
+              const norm = isNaN(p) ? null : p
+              onUpdate({ endAge: norm })
+              setEndAgeStr(norm != null ? String(norm) : '')
+            }}
             className="bg-slate-700 border border-slate-600 rounded text-white text-sm py-1.5 px-2 outline-none focus:border-fire-500" />
         </div>
       </div>
@@ -61,8 +96,22 @@ function ContribForm({ contrib, onUpdate }: { contrib: RecurringContribution; on
         <label className="text-xs text-slate-400">Annual Amount (negative = withdrawal)</label>
         <div className="flex items-center bg-slate-700 rounded border border-slate-600 focus-within:border-fire-500">
           <span className="px-2 text-slate-400 text-sm">$</span>
-          <input type="number" value={contrib.annualAmount}
-            onChange={e => onUpdate({ annualAmount: Number(e.target.value) })}
+          <input
+            type="text"
+            inputMode="decimal"
+            value={amountStr}
+            onChange={e => {
+              const str = e.target.value
+              setAmountStr(str)
+              const parsed = parseFloat(str)
+              if (!isNaN(parsed)) onUpdate({ annualAmount: parsed })
+            }}
+            onBlur={() => {
+              const parsed = parseFloat(amountStr)
+              const norm = isNaN(parsed) ? 0 : parsed
+              onUpdate({ annualAmount: norm })
+              setAmountStr(String(norm))
+            }}
             className="flex-1 bg-transparent text-white text-sm py-1.5 pr-2 outline-none" />
         </div>
       </div>

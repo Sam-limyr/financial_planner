@@ -26,7 +26,7 @@ export function runMonteCarlo(plan: Plan): MonteCarloResult {
     return { years: [], percentiles: [], successRate: 0 }
   }
 
-  const { iterations, annualReturnMean, annualReturnStdDev, percentiles } = mc
+  const { iterations, annualReturnMean, annualReturnStdDev, percentiles, zeroOutFailures } = mc
   const { timeline } = plan
   const nYears = timeline.endAge - timeline.currentAge + 1
 
@@ -41,8 +41,13 @@ export function runMonteCarlo(plan: Plan): MonteCarloResult {
     )
     let depleted = false
     yearData.forEach(({ netWorth }, j) => {
-      netWorthByYear[j].push(netWorth)
-      if (netWorth <= 0) depleted = true
+      // When zeroOutFailures is enabled, once net worth hits 0 it is permanently 0
+      if (zeroOutFailures && depleted) {
+        netWorthByYear[j].push(0)
+      } else {
+        netWorthByYear[j].push(netWorth)
+        if (netWorth <= 0) depleted = true
+      }
     })
     if (!depleted) successCount++
   }

@@ -179,6 +179,7 @@ export interface MonteCarloConfig {
   annualReturnMean: number    // nominal mean annual portfolio return, e.g. 0.07
   annualReturnStdDev: number  // annual standard deviation, e.g. 0.15
   percentiles: number[]       // sorted ascending, e.g. [5, 25, 50, 75, 95]
+  zeroOutFailures: boolean    // if true, once net worth hits 0 it stays 0 (ruin is permanent)
 }
 
 // ── Root Plan ─────────────────────────────────────────────────────────────────────
