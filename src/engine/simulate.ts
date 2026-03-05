@@ -17,6 +17,7 @@ interface SimState {
   cpfOA: number
   cpfSA: number
   cpfMA: number
+  cpfIA: number
 }
 
 function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
@@ -29,6 +30,7 @@ function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
     cpfOA: startingBalances.cpfOA,
     cpfSA: startingBalances.cpfSA,
     cpfMA: startingBalances.cpfMA,
+    cpfIA: startingBalances.cpfIA ?? 0,
   }
 
   const snapshots: YearSnapshot[] = []
@@ -38,6 +40,26 @@ function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
     // ── 1. INCOME ──────────────────────────────────────────────────────────
     const grossIncome = resolveIncome(age, plan.incomePhases, scenario)
     const annuityIncome = resolveAnnuityIncome(age, plan.annuities, cumulativeInflation)
+
+    // ── 1b. CPF LIFE ───────────────────────────────────────────────────────
+    const cpfLifeConfig = cpf.cpfLife
+    let cpfLifeIncome = 0
+    if (cpfLifeConfig?.enabled) {
+      // At RA creation age (typically 55): draw SA then OA into the RA
+      if (age === cpfLifeConfig.raCreationAge) {
+        const saDrawn = Math.min(cpfLifeConfig.raFromSA, state.cpfSA)
+        state.cpfSA -= saDrawn
+        const oaDrawn = Math.min(cpfLifeConfig.raFromOA, state.cpfOA)
+        state.cpfOA -= oaDrawn
+      }
+      // From payout start age onwards, add the annual payout to income
+      if (age >= cpfLifeConfig.payoutStartAge) {
+        const basePayout = cpfLifeConfig.monthlyPayout * 12
+        cpfLifeIncome = cpfLifeConfig.inflationAdjusted
+          ? basePayout * cumulativeInflation
+          : basePayout
+      }
+    }
 
     // ── 2. CPF CONTRIBUTIONS ───────────────────────────────────────────────
     const cpfFlow = computeCPFFlow(age, grossIncome, cpf)
@@ -80,6 +102,7 @@ function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
     const netCashFlow =
       takeHome
       + annuityIncome
+      + cpfLifeIncome
       - incomeTax
       - fixedExpenses
       - cashForMortgage
@@ -92,6 +115,12 @@ function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
     const growthRate = resolveGrowthRate(age, plan.growthConfig, scenario)
     const portfolioFees = resolvePercentageLiabilitiesOnPortfolio(age, state.portfolio, plan)
     state.portfolio = (state.portfolio - portfolioFees) * (1 + growthRate)
+
+    // ── 9b. CPF IA GROWTH ──────────────────────────────────────────────────
+    // CPF IA earns market returns (not the standard 2.5% OA interest rate)
+    if (cpf.cpfIA?.enabled && state.cpfIA > 0) {
+      state.cpfIA *= (1 + cpf.cpfIA.growthRate[scenario])
+    }
 
     // ── 10. SAFE WITHDRAWAL ────────────────────────────────────────────────
     let safeWithdrawal = 0
@@ -108,19 +137,21 @@ function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
     state.cpfOA += state.cpfOA * cpf.interestRates.OA
     state.cpfSA += state.cpfSA * cpf.interestRates.SA
     state.cpfMA += state.cpfMA * cpf.interestRates.MA
+    // cpfIA earns market returns (step 9b), not standard OA interest
 
     // ── 12. INFLATION COMPOUND ─────────────────────────────────────────────
     cumulativeInflation *= (1 + inflation[scenario])
 
     // ── 13. SNAPSHOT ───────────────────────────────────────────────────────
     const mortgageBalance = mort.balance
-    const totalCPF = state.cpfOA + state.cpfSA + state.cpfMA
+    const totalCPF = state.cpfOA + state.cpfSA + state.cpfMA + state.cpfIA
     const netWorth = state.portfolio + totalCPF - mortgageBalance
 
     snapshots.push({
       age,
       grossIncome,
       annuityIncome,
+      cpfLifeIncome,
       cpfEmployeeContribution: cpfFlow.employeeContribution,
       cpfEmployerContribution: cpfFlow.employerContribution,
       cpfOAAdded: cpfFlow.oaAdded,
@@ -138,6 +169,7 @@ function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
       cpfOA: state.cpfOA,
       cpfSA: state.cpfSA,
       cpfMA: state.cpfMA,
+      cpfIA: state.cpfIA,
       mortgageBalance,
       totalCPF,
       netWorth,
@@ -160,7 +192,7 @@ function simulate(plan: Plan, scenario: Scenario): ScenarioResult {
 export function runAllScenarios(plan: Plan): SimulationResult {
   return {
     optimistic: simulate(plan, 'optimistic'),
-    base: simulate(plan, 'base'),
+    base:       simulate(plan, 'base'),
     pessimistic: simulate(plan, 'pessimistic'),
   }
 }

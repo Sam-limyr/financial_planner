@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+
 interface Props {
   label: string
   value: number
@@ -8,15 +10,38 @@ interface Props {
 }
 
 export function CurrencyInput({ label, value, onChange, prefix = '$', hint, className = '' }: Props) {
+  const [localValue, setLocalValue] = useState(String(value))
+
+  useEffect(() => {
+    const parsed = parseFloat(localValue)
+    if (isNaN(parsed) || parsed !== value) setLocalValue(String(value))
+  }, [value])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const str = e.target.value
+    setLocalValue(str)
+    const parsed = parseFloat(str)
+    if (!isNaN(parsed)) onChange(parsed)
+  }
+
+  const handleBlur = () => {
+    const parsed = parseFloat(localValue)
+    const norm = isNaN(parsed) ? 0 : parsed
+    onChange(norm)
+    setLocalValue(String(norm))
+  }
+
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       <label className="text-xs text-slate-400">{label}</label>
       <div className="flex items-center bg-slate-700 rounded border border-slate-600 focus-within:border-fire-500 transition-colors">
         <span className="px-2 text-slate-400 text-sm select-none">{prefix}</span>
         <input
-          type="number"
-          value={value}
-          onChange={e => onChange(Number(e.target.value))}
+          type="text"
+          inputMode="decimal"
+          value={localValue}
+          onChange={handleChange}
+          onBlur={handleBlur}
           className="flex-1 bg-transparent text-white text-sm py-1.5 pr-2 outline-none min-w-0"
         />
       </div>

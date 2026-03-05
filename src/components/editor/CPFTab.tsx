@@ -1,6 +1,8 @@
 import { usePlanStore } from '../../store/planStore'
 import { SectionCard } from '../ui/SectionCard'
 import { NumberInput } from '../ui/NumberInput'
+import { CurrencyInput } from '../ui/CurrencyInput'
+import { ScenarioRateInput } from '../ui/ScenarioRateInput'
 import { Toggle } from '../ui/Toggle'
 
 const CPF_STATUTORY_PREVIEW = [
@@ -12,6 +14,16 @@ const CPF_STATUTORY_PREVIEW = [
   { age: '61–65', employee: '7.5%', employer: '9%',  oa: '22.7%', sa: '18.7%', ma: '58.6%' },
   { age: '>65',   employee: '5%',   employer: '7.5%', oa: '20.0%', sa: '10.5%', ma: '69.5%' },
 ]
+
+const DEFAULT_CPFIA_GROWTH = { optimistic: 0.08, base: 0.06, pessimistic: 0.03 }
+const DEFAULT_CPFLIFE = {
+  raCreationAge: 55,
+  raFromSA: 106500,
+  raFromOA: 0,
+  payoutStartAge: 65,
+  monthlyPayout: 1500,
+  inflationAdjusted: false,
+}
 
 export function CPFTab() {
   const { plan, updateCPF } = usePlanStore()
@@ -33,11 +45,11 @@ export function CPFTab() {
               <div className="space-y-2">
                 <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Interest Rates</p>
                 <div className="grid grid-cols-3 gap-2">
-                  <NumberInput label="OA Rate %" value={+(cpf.interestRates.OA * 100).toFixed(2)} step={0.1}
+                  <NumberInput label="OA Rate %" value={+(cpf.interestRates.OA * 100).toFixed(2)}
                     onChange={v => updateCPF({ interestRates: { ...cpf.interestRates, OA: v / 100 } })} />
-                  <NumberInput label="SA Rate %" value={+(cpf.interestRates.SA * 100).toFixed(2)} step={0.1}
+                  <NumberInput label="SA Rate %" value={+(cpf.interestRates.SA * 100).toFixed(2)}
                     onChange={v => updateCPF({ interestRates: { ...cpf.interestRates, SA: v / 100 } })} />
-                  <NumberInput label="MA Rate %" value={+(cpf.interestRates.MA * 100).toFixed(2)} step={0.1}
+                  <NumberInput label="MA Rate %" value={+(cpf.interestRates.MA * 100).toFixed(2)}
                     onChange={v => updateCPF({ interestRates: { ...cpf.interestRates, MA: v / 100 } })} />
                 </div>
               </div>
@@ -51,15 +63,15 @@ export function CPFTab() {
               {!cpf.useStatutoryRates && (
                 <div className="space-y-2 pl-2 border-l-2 border-slate-600">
                   <div className="grid grid-cols-2 gap-2">
-                    <NumberInput label="Employee Rate %" value={+(cpf.customRates.employeeRate * 100).toFixed(1)} step={0.5}
+                    <NumberInput label="Employee Rate %" value={+(cpf.customRates.employeeRate * 100).toFixed(1)}
                       onChange={v => updateCPF({ customRates: { ...cpf.customRates, employeeRate: v / 100 } })} />
-                    <NumberInput label="Employer Rate %" value={+(cpf.customRates.employerRate * 100).toFixed(1)} step={0.5}
+                    <NumberInput label="Employer Rate %" value={+(cpf.customRates.employerRate * 100).toFixed(1)}
                       onChange={v => updateCPF({ customRates: { ...cpf.customRates, employerRate: v / 100 } })} />
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    <NumberInput label="OA Alloc %" value={+(cpf.customRates.oaAllocation * 100).toFixed(1)} step={0.5}
+                    <NumberInput label="OA Alloc %" value={+(cpf.customRates.oaAllocation * 100).toFixed(1)}
                       onChange={v => updateCPF({ customRates: { ...cpf.customRates, oaAllocation: v / 100 } })} />
-                    <NumberInput label="SA Alloc %" value={+(cpf.customRates.saAllocation * 100).toFixed(1)} step={0.5}
+                    <NumberInput label="SA Alloc %" value={+(cpf.customRates.saAllocation * 100).toFixed(1)}
                       onChange={v => updateCPF({ customRates: { ...cpf.customRates, saAllocation: v / 100 } })} />
                     <div className="flex flex-col gap-1">
                       <label className="text-xs text-slate-400">MA Alloc %</label>
@@ -70,6 +82,90 @@ export function CPFTab() {
                   </div>
                 </div>
               )}
+
+              {/* ── CPF Investment Account (CPFIS) ─────────────────────────── */}
+              <div className="space-y-2 pt-2 border-t border-slate-700">
+                <Toggle
+                  label="Enable CPF Investment Account (CPFIS)"
+                  checked={cpf.cpfIA?.enabled ?? false}
+                  onChange={v => updateCPF({
+                    cpfIA: { ...(cpf.cpfIA ?? { growthRate: DEFAULT_CPFIA_GROWTH }), enabled: v },
+                  })}
+                  hint="OA savings invested in stocks/bonds. Grows at market rates, not the 2.5% OA rate. Starting balance is set in the Setup tab."
+                />
+                {cpf.cpfIA?.enabled && (
+                  <div className="pl-2 border-l-2 border-slate-600">
+                    <ScenarioRateInput
+                      label="CPF IA annual return"
+                      value={cpf.cpfIA.growthRate}
+                      onChange={r => updateCPF({ cpfIA: { ...cpf.cpfIA!, growthRate: r } })}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* ── CPF LIFE ───────────────────────────────────────────────── */}
+              <div className="space-y-2 pt-2 border-t border-slate-700">
+                <Toggle
+                  label="Enable CPF LIFE annuity"
+                  checked={cpf.cpfLife?.enabled ?? false}
+                  onChange={v => updateCPF({
+                    cpfLife: { ...(cpf.cpfLife ?? DEFAULT_CPFLIFE), enabled: v },
+                  })}
+                  hint="At age 55, a Retirement Account (RA) is created by drawing from your SA then OA up to the amounts below. Monthly payouts begin at your chosen payout start age."
+                />
+                {cpf.cpfLife?.enabled && (
+                  <div className="space-y-2 pl-2 border-l-2 border-slate-600">
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">RA Creation (age 55)</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <NumberInput
+                        label="RA Creation Age"
+                        value={cpf.cpfLife.raCreationAge}
+                        min={55} max={65}
+                        onChange={v => updateCPF({ cpfLife: { ...cpf.cpfLife!, raCreationAge: v } })}
+                      />
+                      <CurrencyInput
+                        label="Draw from SA"
+                        value={cpf.cpfLife.raFromSA}
+                        onChange={v => updateCPF({ cpfLife: { ...cpf.cpfLife!, raFromSA: v } })}
+                      />
+                      <CurrencyInput
+                        label="Draw from OA"
+                        value={cpf.cpfLife.raFromOA}
+                        onChange={v => updateCPF({ cpfLife: { ...cpf.cpfLife!, raFromOA: v } })}
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-500">
+                      Set these to match your expected FRS (2026: ~$213k). SA is drawn first; OA covers any shortfall.
+                      Drawdowns are capped at available balances.
+                    </p>
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide pt-1">Payout Phase</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <NumberInput
+                        label="Payout Start Age"
+                        value={cpf.cpfLife.payoutStartAge}
+                        min={65} max={70}
+                        onChange={v => updateCPF({ cpfLife: { ...cpf.cpfLife!, payoutStartAge: v } })}
+                      />
+                      <CurrencyInput
+                        label="Monthly Payout"
+                        value={cpf.cpfLife.monthlyPayout}
+                        onChange={v => updateCPF({ cpfLife: { ...cpf.cpfLife!, monthlyPayout: v } })}
+                      />
+                    </div>
+                    <Toggle
+                      label="Inflation-adjust payout"
+                      checked={cpf.cpfLife.inflationAdjusted}
+                      onChange={v => updateCPF({ cpfLife: { ...cpf.cpfLife!, inflationAdjusted: v } })}
+                      hint="If on, payout grows with cumulative inflation each year."
+                    />
+                    <p className="text-xs text-slate-500">
+                      Annual payout: ${(cpf.cpfLife.monthlyPayout * 12).toLocaleString()}.
+                      Deferring to age 70 can increase monthly payouts by ~7%/yr.
+                    </p>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>

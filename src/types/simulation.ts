@@ -5,6 +5,7 @@ export interface YearSnapshot {
   // Income
   grossIncome: number
   annuityIncome: number
+  cpfLifeIncome: number      // CPF LIFE annual payout (0 before startAge)
   // CPF flows
   cpfEmployeeContribution: number
   cpfEmployerContribution: number
@@ -26,9 +27,10 @@ export interface YearSnapshot {
   cpfOA: number
   cpfSA: number
   cpfMA: number
+  cpfIA: number              // CPF Investment Account balance
   mortgageBalance: number
   // Summary
-  totalCPF: number
+  totalCPF: number           // cpfOA + cpfSA + cpfMA + cpfIA
   netWorth: number           // portfolio + totalCPF − mortgageBalance
 }
 

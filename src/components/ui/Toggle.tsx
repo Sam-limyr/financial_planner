@@ -7,15 +7,15 @@ interface Props {
 
 export function Toggle({ label, checked, onChange, hint }: Props) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-start justify-between gap-3">
       <div>
         <span className="text-sm text-slate-300">{label}</span>
-        {hint && <p className="text-xs text-slate-500">{hint}</p>}
+        {hint && <p className="text-xs text-slate-500 mt-0.5">{hint}</p>}
       </div>
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+        className={`relative inline-flex h-5 w-9 shrink-0 mt-0.5 items-center rounded-full transition-colors ${
           checked ? 'bg-fire-500' : 'bg-slate-600'
         }`}
       >

@@ -35,21 +35,29 @@ function CustomTooltip({ active, payload, label }: any) {
   )
 }
 
+const clamp = (v: number) => Math.max(1, v)
+
 export function TrajectoryChart() {
   const { result, plan } = usePlanStore()
   const [metric, setMetric] = useState<Metric>('netWorth')
+  const [logScale, setLogScale] = useState(false)
 
   // Merge three scenarios into one data array keyed by age
   const data = result.base.snapshots.map((snap, i) => {
     const opt = result.optimistic.snapshots[i]
     const pess = result.pessimistic.snapshots[i]
-    return {
+    const row = {
       age: snap.age,
       Optimistic: opt?.[metric] ?? 0,
-      Base: snap[metric],
+      Base: snap[metric] as number,
       Pessimistic: pess?.[metric] ?? 0,
     }
+    return logScale
+      ? { ...row, Optimistic: clamp(row.Optimistic), Base: clamp(row.Base), Pessimistic: clamp(row.Pessimistic) }
+      : row
   })
+
+  const hasNonPositive = logScale && result.base.snapshots.some(s => (s[metric] as number) <= 0)
 
   const mortgagePayoffAge = plan.mortgage.enabled
     ? plan.mortgage.startAge + plan.mortgage.tenureYears
@@ -59,7 +67,7 @@ export function TrajectoryChart() {
     <div className="bg-slate-800 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-slate-200">Portfolio Trajectory</h2>
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           {(Object.keys(METRIC_LABELS) as Metric[]).map(m => (
             <button
               key={m}
@@ -71,6 +79,15 @@ export function TrajectoryChart() {
               {METRIC_LABELS[m]}
             </button>
           ))}
+          <div className="w-px h-4 bg-slate-600 mx-1" />
+          <button
+            onClick={() => setLogScale(v => !v)}
+            className={`text-xs px-2 py-1 rounded font-mono transition-colors ${
+              logScale ? 'bg-slate-600 text-white' : 'bg-slate-700 text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            {logScale ? 'Log' : 'Lin'}
+          </button>
         </div>
       </div>
 
@@ -98,6 +115,9 @@ export function TrajectoryChart() {
             label={{ value: 'Age', position: 'insideBottom', offset: -2, fill: '#64748b', fontSize: 11 }}
           />
           <YAxis
+            scale={logScale ? 'log' : 'linear'}
+            domain={logScale ? [1, 'auto'] : ['auto', 'auto']}
+            allowDataOverflow
             tick={{ fill: '#94a3b8', fontSize: 11 }}
             tickLine={false}
             axisLine={false}
@@ -128,6 +148,11 @@ export function TrajectoryChart() {
         <span className="flex items-center gap-1.5"><span className="w-4 h-0.5 bg-fire-500 inline-block" />Base</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-0.5 bg-red-500 inline-block" />Pessimistic</span>
       </div>
+      {hasNonPositive && (
+        <p className="text-[10px] text-amber-500 text-center mt-1">
+          Values ≤ 0 are clamped to 1 in log view.
+        </p>
+      )}
     </div>
   )
 }

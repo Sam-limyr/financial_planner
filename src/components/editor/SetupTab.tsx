@@ -10,6 +10,7 @@ export function SetupTab() {
 
   const totalAssets = startingBalances.cash + startingBalances.portfolio
     + startingBalances.cpfOA + startingBalances.cpfSA + startingBalances.cpfMA
+    + (startingBalances.cpfIA ?? 0)
 
   return (
     <>
@@ -53,6 +54,8 @@ export function SetupTab() {
             onChange={v => updateStartingBalances({ cpfSA: v })} />
           <CurrencyInput label="CPF Medisave Account" value={startingBalances.cpfMA}
             onChange={v => updateStartingBalances({ cpfMA: v })} />
+          <CurrencyInput label="CPF Investment Account" value={startingBalances.cpfIA ?? 0}
+            onChange={v => updateStartingBalances({ cpfIA: v })} />
           <CurrencyInput label="Outstanding Mortgage" value={startingBalances.mortgagePrincipal}
             onChange={v => updateStartingBalances({ mortgagePrincipal: v })} />
         </div>

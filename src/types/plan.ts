@@ -21,6 +21,7 @@ export interface StartingBalances {
   cpfOA: number
   cpfSA: number
   cpfMA: number
+  cpfIA?: number           // CPF Investment Account (CPFIS); optional for backward compat
   mortgagePrincipal: number
 }
 
@@ -97,11 +98,28 @@ export interface CPFContributionRates {
   // maAllocation is always (1 - oaAllocation - saAllocation)
 }
 
+export interface CPFIAConfig {
+  enabled: boolean
+  growthRate: ScenarioRate  // annual return on invested CPF IA assets
+}
+
+export interface CPFLifeConfig {
+  enabled: boolean
+  raCreationAge: number      // typically 55; SA then OA are drawn into RA up to specified amounts
+  raFromSA: number           // amount drawn from SA at raCreationAge (SGD)
+  raFromOA: number           // amount drawn from OA at raCreationAge (SGD, used if SA insufficient)
+  payoutStartAge: number     // 65–70; when monthly LIFE payouts begin
+  monthlyPayout: number      // expected monthly payout (SGD)
+  inflationAdjusted: boolean
+}
+
 export interface CPFConfig {
   enabled: boolean
   interestRates: CPFInterestRates
   useStatutoryRates: boolean   // if false, use customRates below
   customRates: CPFContributionRates
+  cpfIA?: CPFIAConfig          // optional for backward compat
+  cpfLife?: CPFLifeConfig      // optional for backward compat
 }
 
 // ── F14: One-time events ──────────────────────────────────────────────────────────
