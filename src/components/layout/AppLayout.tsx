@@ -2,10 +2,14 @@ import { useState, useRef } from 'react'
 import { usePlanStore } from '../../store/planStore'
 import { EditorPanel } from './EditorPanel'
 import { ResultsPanel } from './ResultsPanel'
+import { SavesModal } from './SavesModal'
 
 export function AppLayout() {
-  const { plan, setPlanName, exportPlan, importPlan, resetPlan } = usePlanStore()
+  const { plan, setPlanName, exportPlan, importPlan, resetPlan, lastSavedSnapshot } = usePlanStore()
   const fileRef = useRef<HTMLInputElement>(null)
+  const [showSaves, setShowSaves] = useState(false)
+
+  const isDirty = JSON.stringify(plan) !== lastSavedSnapshot
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -35,6 +39,20 @@ export function AppLayout() {
 
         <div className="flex items-center gap-1.5 ml-auto">
           <input ref={fileRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
+
+          <button
+            onClick={() => setShowSaves(true)}
+            className="relative text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors text-slate-300"
+          >
+            Saves
+            {isDirty && (
+              <span
+                className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-fire-400"
+                aria-label="Unsaved changes"
+              />
+            )}
+          </button>
+
           <button
             onClick={() => fileRef.current?.click()}
             className="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors text-slate-300"
@@ -61,6 +79,8 @@ export function AppLayout() {
         <EditorPanel />
         <ResultsPanel />
       </div>
+
+      {showSaves && <SavesModal onClose={() => setShowSaves(false)} />}
     </div>
   )
 }

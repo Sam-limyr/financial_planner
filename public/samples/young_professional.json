@@ -1,0 +1,100 @@
+{
+  "id": "sample-young-professional",
+  "name": "Young Professional",
+  "timeline": { "currentAge": 25, "retirementAge": 60, "endAge": 85 },
+  "startingBalances": {
+    "cash": 5000,
+    "portfolio": 10000,
+    "cpfOA": 0,
+    "cpfSA": 0,
+    "cpfMA": 0,
+    "mortgagePrincipal": 0
+  },
+  "inflation": { "optimistic": 0.015, "base": 0.025, "pessimistic": 0.04 },
+  "growthConfig": {
+    "mode": "allocation",
+    "directRate": { "optimistic": 0.09, "base": 0.07, "pessimistic": 0.04 },
+    "equityRate": { "optimistic": 0.11, "base": 0.09, "pessimistic": 0.05 },
+    "bondRate": { "optimistic": 0.04, "base": 0.03, "pessimistic": 0.02 },
+    "allocationPeriods": [
+      { "id": "ap-yp-1", "startAge": 25, "equityFraction": 0.90 },
+      { "id": "ap-yp-2", "startAge": 50, "equityFraction": 0.65 },
+      { "id": "ap-yp-3", "startAge": 60, "equityFraction": 0.40 }
+    ]
+  },
+  "withdrawalConfig": { "enabled": false, "rate": 0.04, "startAge": 60 },
+  "incomePhases": [
+    {
+      "id": "ip-yp-1",
+      "name": "Early Career",
+      "startAge": 25,
+      "endAge": 35,
+      "type": "growth",
+      "baseAnnualIncome": 60000,
+      "growthRate": { "optimistic": 0.08, "base": 0.06, "pessimistic": 0.03 }
+    },
+    {
+      "id": "ip-yp-2",
+      "name": "Peak Career",
+      "startAge": 35,
+      "endAge": 55,
+      "type": "plateau",
+      "baseAnnualIncome": 160000,
+      "growthRate": { "optimistic": 0.02, "base": 0.01, "pessimistic": 0.0 }
+    },
+    {
+      "id": "ip-yp-3",
+      "name": "Wind-down",
+      "startAge": 55,
+      "endAge": 60,
+      "type": "taper",
+      "baseAnnualIncome": 140000,
+      "growthRate": { "optimistic": -0.03, "base": -0.06, "pessimistic": -0.10 }
+    }
+  ],
+  "expenses": [
+    {
+      "id": "ex-yp-1",
+      "name": "Living Expenses",
+      "amount": 2800,
+      "frequency": "monthly",
+      "startAge": null,
+      "endAge": null,
+      "inflationLinked": true,
+      "customEscalationRate": null
+    },
+    {
+      "id": "ex-yp-2",
+      "name": "Retirement Living",
+      "amount": 3500,
+      "frequency": "monthly",
+      "startAge": 60,
+      "endAge": null,
+      "inflationLinked": true,
+      "customEscalationRate": null
+    }
+  ],
+  "percentageLiabilities": [],
+  "mortgage": {
+    "enabled": false,
+    "principal": 400000,
+    "annualInterestRate": 0.035,
+    "tenureYears": 25,
+    "startAge": 28,
+    "cpfOAFraction": 0
+  },
+  "cpf": {
+    "enabled": false,
+    "interestRates": { "OA": 0.025, "SA": 0.04, "MA": 0.04 },
+    "useStatutoryRates": true,
+    "customRates": {
+      "employeeRate": 0.20,
+      "employerRate": 0.17,
+      "oaAllocation": 0.6217,
+      "saAllocation": 0.1621
+    }
+  },
+  "oneTimeEvents": [],
+  "recurringContributions": [],
+  "annuities": []
+}

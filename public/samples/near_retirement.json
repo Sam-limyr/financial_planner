@@ -1,0 +1,81 @@
+{
+  "id": "sample-near-retirement",
+  "name": "Near Retirement",
+  "timeline": { "currentAge": 55, "retirementAge": 62, "endAge": 85 },
+  "startingBalances": {
+    "cash": 50000,
+    "portfolio": 600000,
+    "cpfOA": 100000,
+    "cpfSA": 60000,
+    "cpfMA": 30000,
+    "mortgagePrincipal": 30000
+  },
+  "inflation": { "optimistic": 0.015, "base": 0.025, "pessimistic": 0.04 },
+  "growthConfig": {
+    "mode": "allocation",
+    "directRate": { "optimistic": 0.07, "base": 0.05, "pessimistic": 0.03 },
+    "equityRate": { "optimistic": 0.09, "base": 0.07, "pessimistic": 0.04 },
+    "bondRate": { "optimistic": 0.04, "base": 0.03, "pessimistic": 0.02 },
+    "allocationPeriods": [
+      { "id": "ap-nr-1", "startAge": 55, "equityFraction": 0.40 },
+      { "id": "ap-nr-2", "startAge": 62, "equityFraction": 0.25 }
+    ]
+  },
+  "withdrawalConfig": { "enabled": true, "rate": 0.035, "startAge": 62 },
+  "incomePhases": [
+    {
+      "id": "ip-nr-1",
+      "name": "Final Working Years",
+      "startAge": 55,
+      "endAge": 62,
+      "type": "plateau",
+      "baseAnnualIncome": 130000,
+      "growthRate": { "optimistic": 0.01, "base": 0.0, "pessimistic": 0.0 }
+    }
+  ],
+  "expenses": [
+    {
+      "id": "ex-nr-1",
+      "name": "Living Expenses",
+      "amount": 4500,
+      "frequency": "monthly",
+      "startAge": null,
+      "endAge": null,
+      "inflationLinked": true,
+      "customEscalationRate": null
+    },
+    {
+      "id": "ex-nr-2",
+      "name": "Retirement Living",
+      "amount": 5000,
+      "frequency": "monthly",
+      "startAge": 62,
+      "endAge": null,
+      "inflationLinked": true,
+      "customEscalationRate": null
+    }
+  ],
+  "percentageLiabilities": [],
+  "mortgage": {
+    "enabled": true,
+    "principal": 30000,
+    "annualInterestRate": 0.028,
+    "tenureYears": 3,
+    "startAge": 55,
+    "cpfOAFraction": 0
+  },
+  "cpf": {
+    "enabled": true,
+    "interestRates": { "OA": 0.025, "SA": 0.04, "MA": 0.04 },
+    "useStatutoryRates": true,
+    "customRates": {
+      "employeeRate": 0.13,
+      "employerRate": 0.09,
+      "oaAllocation": 0.4054,
+      "saAllocation": 0.3108
+    }
+  },
+  "oneTimeEvents": [],
+  "recurringContributions": [],
+  "annuities": []
+}

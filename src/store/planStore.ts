@@ -11,6 +11,18 @@ import { runAllScenarios } from '../engine/simulate'
 import { createDefaultPlan } from './defaultPlan'
 
 const STORAGE_KEY = 'retire-if-fire-plan'
+const SAVES_KEY = 'retire-if-fire-saves'
+
+// ── SavedProfile ──────────────────────────────────────────────────────────────
+
+export interface SavedProfile {
+  id: string
+  name: string
+  savedAt: string  // ISO timestamp
+  plan: Plan
+}
+
+// ── localStorage helpers ──────────────────────────────────────────────────────
 
 function loadFromStorage(): Plan | null {
   try {
@@ -30,11 +42,38 @@ function saveToStorage(plan: Plan) {
   }
 }
 
+function loadSavesFromStorage(): SavedProfile[] {
+  try {
+    const raw = localStorage.getItem(SAVES_KEY)
+    return raw ? JSON.parse(raw) as SavedProfile[] : []
+  } catch {
+    return []
+  }
+}
+
+function saveSavesToStorage(profiles: SavedProfile[]) {
+  try {
+    localStorage.setItem(SAVES_KEY, JSON.stringify(profiles))
+  } catch {
+    // ignore quota errors
+  }
+}
+
+// ── Store interface ───────────────────────────────────────────────────────────
+
 interface PlanStore {
   plan: Plan
   result: SimulationResult
 
-  // ── Mutations ──────────────────────────────────────────────────────────
+  // ── Save/Load profiles ────────────────────────────────────────────────────
+  savedProfiles: SavedProfile[]
+  lastSavedSnapshot: string  // JSON.stringify of plan at last save/load event
+
+  savePlan: (name: string) => void
+  loadProfile: (plan: Plan) => void
+  deleteProfile: (id: string) => void
+
+  // ── Mutations ──────────────────────────────────────────────────────────────
   updateTimeline: (t: Partial<Timeline>) => void
   updateStartingBalances: (b: Partial<StartingBalances>) => void
   updateInflation: (r: ScenarioRate) => void
@@ -100,6 +139,40 @@ export const usePlanStore = create<PlanStore>()(
   subscribeWithSelector((set, get) => ({
     plan: initialPlan,
     result: runAllScenarios(initialPlan),
+    savedProfiles: loadSavesFromStorage(),
+    lastSavedSnapshot: JSON.stringify(initialPlan),
+
+    // ── Save/Load profiles ──────────────────────────────────────────────────
+
+    savePlan: (name) => {
+      const { plan, savedProfiles } = get()
+      const snapshot = JSON.stringify(plan)
+      const existingIdx = savedProfiles.findIndex(p => p.name === name)
+      let updated: SavedProfile[]
+      if (existingIdx >= 0) {
+        updated = savedProfiles.map((p, i) =>
+          i === existingIdx ? { ...p, savedAt: new Date().toISOString(), plan } : p)
+      } else {
+        updated = [
+          { id: crypto.randomUUID(), name, savedAt: new Date().toISOString(), plan },
+          ...savedProfiles,
+        ]
+      }
+      saveSavesToStorage(updated)
+      set({ savedProfiles: updated, lastSavedSnapshot: snapshot })
+    },
+
+    loadProfile: (plan) => {
+      set({ ...withResult(plan), lastSavedSnapshot: JSON.stringify(plan) })
+    },
+
+    deleteProfile: (id) => {
+      const updated = get().savedProfiles.filter(p => p.id !== id)
+      saveSavesToStorage(updated)
+      set({ savedProfiles: updated })
+    },
+
+    // ── Plan mutations ──────────────────────────────────────────────────────
 
     setPlanName: (name) => set(s => withResult({ ...s.plan, name })),
 
@@ -193,7 +266,7 @@ export const usePlanStore = create<PlanStore>()(
       try {
         const parsed = JSON.parse(json) as Plan
         if (!parsed.timeline || !parsed.startingBalances) throw new Error('Invalid plan')
-        set(withResult(parsed))
+        set({ ...withResult(parsed), lastSavedSnapshot: JSON.stringify(parsed) })
       } catch {
         alert('Failed to import plan — invalid file format.')
       }

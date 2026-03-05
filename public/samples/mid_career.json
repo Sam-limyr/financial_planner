@@ -1,0 +1,91 @@
+{
+  "id": "sample-mid-career",
+  "name": "Mid Career",
+  "timeline": { "currentAge": 40, "retirementAge": 65, "endAge": 90 },
+  "startingBalances": {
+    "cash": 30000,
+    "portfolio": 200000,
+    "cpfOA": 80000,
+    "cpfSA": 40000,
+    "cpfMA": 20000,
+    "mortgagePrincipal": 0
+  },
+  "inflation": { "optimistic": 0.015, "base": 0.025, "pessimistic": 0.04 },
+  "growthConfig": {
+    "mode": "allocation",
+    "directRate": { "optimistic": 0.09, "base": 0.07, "pessimistic": 0.04 },
+    "equityRate": { "optimistic": 0.10, "base": 0.08, "pessimistic": 0.05 },
+    "bondRate": { "optimistic": 0.04, "base": 0.03, "pessimistic": 0.02 },
+    "allocationPeriods": [
+      { "id": "ap-mc-1", "startAge": 40, "equityFraction": 0.60 },
+      { "id": "ap-mc-2", "startAge": 55, "equityFraction": 0.45 },
+      { "id": "ap-mc-3", "startAge": 65, "equityFraction": 0.30 }
+    ]
+  },
+  "withdrawalConfig": { "enabled": true, "rate": 0.04, "startAge": 65 },
+  "incomePhases": [
+    {
+      "id": "ip-mc-1",
+      "name": "Peak Career",
+      "startAge": 40,
+      "endAge": 60,
+      "type": "plateau",
+      "baseAnnualIncome": 100000,
+      "growthRate": { "optimistic": 0.02, "base": 0.01, "pessimistic": 0.0 }
+    },
+    {
+      "id": "ip-mc-2",
+      "name": "Wind-down",
+      "startAge": 60,
+      "endAge": 65,
+      "type": "taper",
+      "baseAnnualIncome": 90000,
+      "growthRate": { "optimistic": -0.03, "base": -0.05, "pessimistic": -0.08 }
+    }
+  ],
+  "expenses": [
+    {
+      "id": "ex-mc-1",
+      "name": "Living Expenses",
+      "amount": 3500,
+      "frequency": "monthly",
+      "startAge": null,
+      "endAge": null,
+      "inflationLinked": true,
+      "customEscalationRate": null
+    },
+    {
+      "id": "ex-mc-2",
+      "name": "Retirement Living",
+      "amount": 4000,
+      "frequency": "monthly",
+      "startAge": 65,
+      "endAge": null,
+      "inflationLinked": true,
+      "customEscalationRate": null
+    }
+  ],
+  "percentageLiabilities": [],
+  "mortgage": {
+    "enabled": false,
+    "principal": 500000,
+    "annualInterestRate": 0.035,
+    "tenureYears": 25,
+    "startAge": 32,
+    "cpfOAFraction": 0.5
+  },
+  "cpf": {
+    "enabled": true,
+    "interestRates": { "OA": 0.025, "SA": 0.04, "MA": 0.04 },
+    "useStatutoryRates": true,
+    "customRates": {
+      "employeeRate": 0.20,
+      "employerRate": 0.17,
+      "oaAllocation": 0.6217,
+      "saAllocation": 0.1621
+    }
+  },
+  "oneTimeEvents": [],
+  "recurringContributions": [],
+  "annuities": []
+}

@@ -16,6 +16,8 @@ A launch script is provided for PowerShell. From the project directory:
 
 Then open **http://localhost:5173** in your browser.
 
+The app loads with a sample plan. To try a different starting point, click **Saves** in the header and pick one of the built-in sample profiles. When you're ready to keep your work, open **Saves** again, enter a name, and click **Save**.
+
 > If PowerShell blocks the script with an execution policy error, run once:
 > ```powershell
 > Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
@@ -83,13 +85,15 @@ src/
 │   ├── cpf.ts           # CPF statutory rates + contribution logic
 │   └── growth.ts        # Portfolio growth rate resolver
 ├── store/
-│   ├── planStore.ts     # Zustand store — mutations + auto-save
+│   ├── planStore.ts     # Zustand store — mutations, saves, auto-save
 │   └── defaultPlan.ts   # Sample plan pre-loaded on first launch
 └── components/
-    ├── layout/          # AppLayout, EditorPanel, ResultsPanel
+    ├── layout/          # AppLayout, EditorPanel, ResultsPanel, SavesModal
     ├── editor/          # One tab component per section
     ├── results/         # TrajectoryChart, ResultsTable, SummaryCards
-    └── ui/              # Reusable form primitives
+    └── ui/              # Reusable form primitives (incl. Modal)
+public/
+└── samples/             # Sample profile JSON files + index manifest
 docs/
 ├── product_requirements_document.md
 └── product_implementation_design.md
@@ -118,11 +122,29 @@ All monetary values are **nominal** (not inflation-adjusted). Expenses grow with
 
 ---
 
-## Persistence
+## Saves & profiles
 
-- The plan auto-saves to `localStorage` after every change.
-- Use **Export** to download a `.json` file and **Import** to load it back.
-- **Reset** returns to the default sample plan.
+The **Saves** button in the header opens the saves panel.
+
+- **Save current plan** — give the current plan a name and store it as a named slot. Saving a name that already exists overwrites it.
+- **Load a profile** — instantly replace the current plan with any saved or sample profile. If you have unsaved changes you'll be asked whether to save them first, discard them, or cancel.
+- **Delete a save** — removes the slot from your saves list.
+- A small orange dot appears on the **Saves** button whenever the current plan has unsaved changes.
+
+Named saves persist across page reloads in `localStorage`. The plan also **auto-saves** after every change, so your work is never lost between sessions.
+
+Use **Export** to download the current plan as a `.json` file and **Import** to load it back. **Reset** returns to the default sample plan.
+
+### Sample profiles
+
+Four starter profiles are included to get you started quickly:
+
+| Profile | Starting age | Retirement | Description |
+|---|---|---|---|
+| **Young Professional** | 25 | 60 | Aggressive 90% equity allocation, high salary growth trajectory, no CPF or mortgage |
+| **Mid Career** | 40 | 65 | Balanced 60→30% equity glide path, CPF enabled with statutory rates |
+| **Near Retirement** | 55 | 62 | Conservative 40→25% equity, small remaining mortgage, 3.5% safe withdrawal rate |
+| **CPF Homeowner** | 32 | 65 | Active $450k HDB mortgage with 50% CPF-OA repayment, Singapore-focused setup |
 
 ---
 

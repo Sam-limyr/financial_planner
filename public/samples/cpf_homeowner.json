@@ -1,0 +1,108 @@
+{
+  "id": "sample-cpf-homeowner",
+  "name": "CPF Homeowner",
+  "timeline": { "currentAge": 32, "retirementAge": 65, "endAge": 90 },
+  "startingBalances": {
+    "cash": 15000,
+    "portfolio": 30000,
+    "cpfOA": 25000,
+    "cpfSA": 12000,
+    "cpfMA": 8000,
+    "mortgagePrincipal": 450000
+  },
+  "inflation": { "optimistic": 0.015, "base": 0.025, "pessimistic": 0.04 },
+  "growthConfig": {
+    "mode": "allocation",
+    "directRate": { "optimistic": 0.09, "base": 0.07, "pessimistic": 0.04 },
+    "equityRate": { "optimistic": 0.10, "base": 0.08, "pessimistic": 0.05 },
+    "bondRate": { "optimistic": 0.04, "base": 0.03, "pessimistic": 0.02 },
+    "allocationPeriods": [
+      { "id": "ap-ch-1", "startAge": 32, "equityFraction": 0.70 },
+      { "id": "ap-ch-2", "startAge": 50, "equityFraction": 0.50 },
+      { "id": "ap-ch-3", "startAge": 65, "equityFraction": 0.30 }
+    ]
+  },
+  "withdrawalConfig": { "enabled": false, "rate": 0.04, "startAge": 65 },
+  "incomePhases": [
+    {
+      "id": "ip-ch-1",
+      "name": "Growing Career",
+      "startAge": 32,
+      "endAge": 45,
+      "type": "growth",
+      "baseAnnualIncome": 70000,
+      "growthRate": { "optimistic": 0.06, "base": 0.04, "pessimistic": 0.02 }
+    },
+    {
+      "id": "ip-ch-2",
+      "name": "Senior Career",
+      "startAge": 45,
+      "endAge": 60,
+      "type": "plateau",
+      "baseAnnualIncome": 110000,
+      "growthRate": { "optimistic": 0.01, "base": 0.005, "pessimistic": 0.0 }
+    },
+    {
+      "id": "ip-ch-3",
+      "name": "Wind-down",
+      "startAge": 60,
+      "endAge": 65,
+      "type": "taper",
+      "baseAnnualIncome": 95000,
+      "growthRate": { "optimistic": -0.02, "base": -0.05, "pessimistic": -0.08 }
+    }
+  ],
+  "expenses": [
+    {
+      "id": "ex-ch-1",
+      "name": "Living Expenses",
+      "amount": 3200,
+      "frequency": "monthly",
+      "startAge": null,
+      "endAge": null,
+      "inflationLinked": true,
+      "customEscalationRate": null
+    },
+    {
+      "id": "ex-ch-2",
+      "name": "Retirement Living",
+      "amount": 4000,
+      "frequency": "monthly",
+      "startAge": 65,
+      "endAge": null,
+      "inflationLinked": true,
+      "customEscalationRate": null
+    }
+  ],
+  "percentageLiabilities": [],
+  "mortgage": {
+    "enabled": true,
+    "principal": 450000,
+    "annualInterestRate": 0.026,
+    "tenureYears": 25,
+    "startAge": 32,
+    "cpfOAFraction": 0.50
+  },
+  "cpf": {
+    "enabled": true,
+    "interestRates": { "OA": 0.025, "SA": 0.04, "MA": 0.04 },
+    "useStatutoryRates": true,
+    "customRates": {
+      "employeeRate": 0.20,
+      "employerRate": 0.17,
+      "oaAllocation": 0.6217,
+      "saAllocation": 0.1621
+    }
+  },
+  "oneTimeEvents": [
+    {
+      "id": "ote-ch-1",
+      "name": "HDB Housing Grant",
+      "amount": 20000,
+      "age": 32,
+      "targetAccount": "cash"
+    }
+  ],
+  "recurringContributions": [],
+  "annuities": []
+}

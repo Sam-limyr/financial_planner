@@ -1,0 +1,6 @@
+[
+  { "id": "young_professional", "name": "Young Professional", "file": "young_professional.json" },
+  { "id": "mid_career",         "name": "Mid Career",         "file": "mid_career.json" },
+  { "id": "near_retirement",    "name": "Near Retirement",    "file": "near_retirement.json" },
+  { "id": "cpf_homeowner",      "name": "CPF Homeowner",      "file": "cpf_homeowner.json" }
+]
