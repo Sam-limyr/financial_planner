@@ -1,13 +1,23 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { usePlanStore } from '../../store/planStore'
 import { EditorPanel } from './EditorPanel'
 import { ResultsPanel } from './ResultsPanel'
 import { SavesModal } from './SavesModal'
+import { HelpTour } from '../ui/HelpTour'
 
 export function AppLayout() {
   const { plan, setPlanName, exportPlan, importPlan, resetPlan, lastSavedSnapshot } = usePlanStore()
   const fileRef = useRef<HTMLInputElement>(null)
   const [showSaves, setShowSaves] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
+  const [helpHint, setHelpHint] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setHelpHint(false), 10000)
+    const dismiss = () => setHelpHint(false)
+    window.addEventListener('click', dismiss)
+    return () => { clearTimeout(timer); window.removeEventListener('click', dismiss) }
+  }, [])
 
   const isDirty = JSON.stringify(plan) !== lastSavedSnapshot
 
@@ -39,6 +49,25 @@ export function AppLayout() {
 
         <div className="flex items-center gap-1.5 ml-auto">
           <input ref={fileRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
+
+          <div className="relative">
+            {helpHint && (
+              <span className="absolute inset-0 rounded-full animate-ping bg-amber-400/60 pointer-events-none" />
+            )}
+            <button
+              onClick={() => setShowHelp(true)}
+              title="Help tour"
+              className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors text-xs font-bold ${
+                helpHint
+                  ? 'bg-amber-500 text-white hover:bg-amber-400'
+                  : 'bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              ?
+            </button>
+          </div>
+
+          <div className="w-px h-4 bg-slate-700" />
 
           <button
             onClick={() => setShowSaves(true)}
@@ -81,6 +110,7 @@ export function AppLayout() {
       </div>
 
       {showSaves && <SavesModal onClose={() => setShowSaves(false)} />}
+      {showHelp && <HelpTour onClose={() => setShowHelp(false)} />}
     </div>
   )
 }

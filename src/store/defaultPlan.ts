@@ -122,7 +122,7 @@ export function createDefaultPlan(): Plan {
     oneTimeEvents: [],
     recurringContributions: [],
     monteCarlo: {
-      enabled: false,
+      enabled: true,
       iterations: 1000,
       annualReturnMean: 0.07,
       annualReturnStdDev: 0.15,
