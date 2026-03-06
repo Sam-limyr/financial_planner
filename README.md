@@ -2,11 +2,17 @@
 
 A year-by-year retirement planning simulator. Model your income, expenses, investments, CPF, mortgage, and one-off events across a multi-decade horizon — with optimistic, base, and pessimistic projections, plus full Monte Carlo stochastic simulation.
 
+![Projection Graphs](app_screenshots/projection_graphs.png)
+
+![Year-by-Year Breakdown](app_screenshots/year_by_year_breakdown.png)
+
 ---
 
 ## Quickstart
 
 **Requirements:** Node.js 18+ (tested on 24 LTS)
+
+**Windows**
 
 A launch script is provided for PowerShell. From the project directory:
 

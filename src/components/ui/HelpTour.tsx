@@ -77,7 +77,7 @@ const STEPS: Step[] = [
   },
   {
     title: 'Import & export',
-    body: 'Saves stores named plans in the browser — useful for quick comparisons, but lost if you clear browser data. For long-term storage, use Export to save a JSON file to your computer and Import to restore it. Your active plan auto-saves to the browser on every change.',
+    body: 'Saves manages storage of named plans in the browser — useful for quick comparisons, but lost if you clear browser data. For long-term storage, use Export to save a JSON file to your computer and Import to restore it. Your active plan auto-saves to the browser on every change.',
     spot: { left: `calc(100vw - 300px)`, top: 0, width: 300, height: HEADER_H },
     tip: { right: 20, top: HEADER_H + 10 },
     arrow: 'top',
