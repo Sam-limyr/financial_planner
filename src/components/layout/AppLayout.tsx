@@ -13,7 +13,7 @@ export function AppLayout() {
   const [helpHint, setHelpHint] = useState(true)
 
   useEffect(() => {
-    const timer = setTimeout(() => setHelpHint(false), 10000)
+    const timer = setTimeout(() => setHelpHint(false), 15000)
     const dismiss = () => setHelpHint(false)
     window.addEventListener('click', dismiss)
     return () => { clearTimeout(timer); window.removeEventListener('click', dismiss) }
@@ -52,7 +52,7 @@ export function AppLayout() {
 
           <div className="relative">
             {helpHint && (
-              <span className="absolute inset-0 rounded-full animate-ping bg-amber-400/60 pointer-events-none" />
+              <span className="absolute inset-[-16px] rounded-full animate-ping bg-amber-400/80 pointer-events-none" />
             )}
             <button
               onClick={() => setShowHelp(true)}

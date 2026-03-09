@@ -10,11 +10,16 @@ A year-by-year retirement planning simulator. Model your income, expenses, inves
 
 ## Quickstart
 
-**Requirements:** Node.js 18+ (tested on 24 LTS)
+**Requirements:** Node.js 24 (probably doesn't work on other versions)
 
 **Windows**
 
-A launch script is provided for PowerShell. From the project directory:
+```bash
+corepack enable
+pnpm install
+```
+
+A launch script is provided for PowerShell (for additions to PATH). From the project directory:
 
 ```powershell
 .\launch_app.ps1
@@ -29,8 +34,6 @@ The app loads with a sample plan. To try a different starting point, click **Sav
 > Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 > ```
 
-### Other environments
-
 **macOS / Linux**
 
 pnpm via corepack installs into a directory already on `PATH`, so no path manipulation is needed:
@@ -39,6 +42,8 @@ corepack enable
 pnpm install
 pnpm dev
 ```
+
+Then open **http://localhost:5173** in your browser.
 
 **Command Prompt (cmd.exe)**
 ```cmd
